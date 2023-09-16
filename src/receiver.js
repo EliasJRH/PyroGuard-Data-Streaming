@@ -51,7 +51,7 @@ async function receiveMessages() {
       return;
     }
   })
-  console.log("Ready to send messages")
+  console.log("Ready to receive messages")
 
   // Create the topic and starts listening
   new TopicMessageQuery()
