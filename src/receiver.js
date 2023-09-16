@@ -8,6 +8,7 @@ const {
   TopicMessageQuery,
   TopicMessageSubmitTransaction,
 } = require("@hashgraph/sdk");
+const fs = require('fs')
 
 // Grab the OPERATOR_ID and OPERATOR_KEY from the .env file
 const myAccountId = process.env.MY_ACCOUNT_ID;
@@ -20,10 +21,39 @@ const client = Client.forTestnet();
 client.setOperator(myAccountId, myPrivateKey);
 
 async function receiveMessages() {
+  // Create a new topic
+  let txResponse = await new TopicCreateTransaction().execute(client);
 
-  let topicId = "0.0.2005130";
+  // Grab the newly generated topic ID
+  let receipt = await txResponse.getReceipt(client);
+  let topicId = receipt.topicId;
 
-  // Create the topic
+  let fileContents = [];
+
+  fs.readFile(".env", 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    fileContents = data.split("\n")
+    if (fileContents.length == 2){
+      fileContents.push(`TOPIC_ID="${topicId}"`)
+    }else{
+      fileContents[2]=`TOPIC_ID="${topicId}"`
+    }
+  });
+
+  // Wait 5 seconds between consensus topic creation and subscription creation
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  fs.writeFile(".env", fileContents.join("\n"), (err)=>{
+    if (err) {
+      console.error(err);
+      return;
+    }
+  })
+  console.log("Ready to send messages")
+
+  // Create the topic and starts listening
   new TopicMessageQuery()
     .setTopicId(topicId)
     .subscribe(client, null, (message) => {
@@ -32,7 +62,6 @@ async function receiveMessages() {
         `${message.consensusTimestamp.toDate()} Received: ${messageAsString}`
       );
     });
-  // client.close()
 }
 
 receiveMessages();

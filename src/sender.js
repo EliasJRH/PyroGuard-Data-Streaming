@@ -8,14 +8,11 @@ const {
   TopicMessageQuery,
   TopicMessageSubmitTransaction,
 } = require("@hashgraph/sdk");
-const readline = require('readline').createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 
 // Grab the OPERATOR_ID and OPERATOR_KEY from the .env file
 const myAccountId = process.env.MY_ACCOUNT_ID;
 const myPrivateKey = process.env.MY_PRIVATE_KEY;
+const topicId = process.env.TOPIC_ID;
 
 // Build Hedera testnet and mirror node client
 const client = Client.forTestnet();
@@ -24,19 +21,6 @@ const client = Client.forTestnet();
 client.setOperator(myAccountId, myPrivateKey);
 
 async function submitFirstMessage() {
-  // Create a new topic
-  let txResponse = await new TopicCreateTransaction().execute(client);
-
-  // Grab the newly generated topic ID
-  let receipt = await txResponse.getReceipt(client);
-  let topicId = receipt.topicId;
-  console.log(`Your topic ID is: ${topicId}`);
-
-  // Wait 5 seconds between consensus topic creation and subscription creation
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-
-  console.log("Ready to send messages")
-
   while (true){
     // user input js
     console.log("Waiting 10 seconds")
@@ -52,9 +36,7 @@ async function submitFirstMessage() {
     // Get the status of the transaction
     const transactionStatus = getReceipt.status;
     console.log("The message transaction status: " + transactionStatus.toString());
-    // client.close()
-  }
-  
+  }  
 }
 
 submitFirstMessage();
