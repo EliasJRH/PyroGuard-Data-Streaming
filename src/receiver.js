@@ -45,6 +45,7 @@ async function receiveMessages() {
 
   // Wait 5 seconds between consensus topic creation and subscription creation
   await new Promise((resolve) => setTimeout(resolve, 5000));
+  // This is a hack because I don't have a better way to pass topicId to sender.js
   fs.writeFile(".env", fileContents.join("\n"), (err)=>{
     if (err) {
       console.error(err);
