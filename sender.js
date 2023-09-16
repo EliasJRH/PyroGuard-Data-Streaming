@@ -8,6 +8,10 @@ const {
   TopicMessageQuery,
   TopicMessageSubmitTransaction,
 } = require("@hashgraph/sdk");
+const readline = require('readline').createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 // Grab the OPERATOR_ID and OPERATOR_KEY from the .env file
 const myAccountId = process.env.MY_ACCOUNT_ID;
@@ -31,27 +35,26 @@ async function submitFirstMessage() {
   // Wait 5 seconds between consensus topic creation and subscription creation
   await new Promise((resolve) => setTimeout(resolve, 5000));
 
-  // Create the topic
-  new TopicMessageQuery()
-    .setTopicId(topicId)
-    .subscribe(client, null, (message) => {
-      let messageAsString = Buffer.from(message.contents, "utf8").toString();
-      console.log(
-        `${message.consensusTimestamp.toDate()} Received: ${messageAsString}`
-      );
-    });
+  console.log("Ready to send messages")
 
-  // Send message to topic
-  let sendResponse = await new TopicMessageSubmitTransaction({
-    topicId: topicId,
-    message: "Hello, HCS!",
-  }).execute(client);
-  const getReceipt = await sendResponse.getReceipt(client);
+  while (true){
+    // user input js
+    console.log("Waiting 10 seconds")
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
-  // Get the status of the transaction
-  const transactionStatus = getReceipt.status;
-  console.log("The message transaction status: " + transactionStatus.toString());
-  client.close()
+    // Send message to topic
+    let sendResponse = await new TopicMessageSubmitTransaction({
+      topicId: topicId,
+      message: "Hello, HCS!",
+    }).execute(client);
+    const getReceipt = await sendResponse.getReceipt(client);
+
+    // Get the status of the transaction
+    const transactionStatus = getReceipt.status;
+    console.log("The message transaction status: " + transactionStatus.toString());
+    // client.close()
+  }
+  
 }
 
 submitFirstMessage();
