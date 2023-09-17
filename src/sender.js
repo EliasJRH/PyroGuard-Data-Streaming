@@ -19,9 +19,9 @@ const client = Client.forTestnet();
 client.setOperator(myAccountId, myPrivateKey);
 
 // Create a new SerialPort instance
-const portName = 'COM7'; 
+const inputPortName = 'COM7'; 
 const port = new SerialPort({
-  path: portName,
+  path: inputPortName,
   baudRate: 9600, // Set the baud rate of your device
 });
 
@@ -30,7 +30,7 @@ const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
 // Open the serial port
 port.on('open', () => {
-  console.log(`Serial port ${portName} is open.`);
+  console.log(`Serial port ${inputPortName} is open.`);
 });
 
 // Read data from the serial port
@@ -56,7 +56,7 @@ port.on('error', (err) => {
 // Close the serial port when the script exits (Ctrl+C)
 process.on('SIGINT', () => {
   port.close(() => {
-    console.log(`Serial port ${portName} is closed.`);
+    console.log(`Serial port ${inputPortName} is closed.`);
     client.close()
   });
 });

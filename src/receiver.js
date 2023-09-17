@@ -1,14 +1,12 @@
 console.clear();
 require("dotenv").config();
 const {
-  AccountId,
-  PrivateKey,
   Client,
   TopicCreateTransaction,
   TopicMessageQuery,
-  TopicMessageSubmitTransaction,
 } = require("@hashgraph/sdk");
 const fs = require('fs')
+const { SerialPort } = require('serialport')
 
 // Grab the OPERATOR_ID and OPERATOR_KEY from the .env file
 const myAccountId = process.env.MY_ACCOUNT_ID;
@@ -19,6 +17,18 @@ const client = Client.forTestnet();
 
 // Set the operator account ID and operator private key
 client.setOperator(myAccountId, myPrivateKey);
+
+// Create a new SerialPort instance
+const outputPortName = 'COM6'; 
+const port = new SerialPort({
+  path: outputPortName,
+  baudRate: 9600, // Set the baud rate of your device
+});
+
+// Open the serial port
+port.on('open', () => {
+  console.log(`Serial port ${outputPortName} is open.`);
+});
 
 async function receiveMessages() {
   let topicId;
@@ -62,10 +72,30 @@ async function receiveMessages() {
   
   console.log("Ready to receive messages")
 
+  let stationsOnFire = []
+
   new TopicMessageQuery()
     .setTopicId(topicId)
     .subscribe(client, null, (message) => {
       let messageAsString = Buffer.from(message.contents, "utf8").toString();
+      let serialMessage;
+      // Add logic for if there is a fire
+      messageAsString = messageAsString.split(",")
+      
+      if (messageAsString[3] == "250"){
+        stationsOnFire.push(messageAsString[0])
+      }else{
+        stationsOnFire = stationsOnFire.filter((station) => station != messageAsString[0])
+      }
+
+      if (stationsOnFire.length > 0){
+        serialMessage = `FIRE AT ${len(stationsOnFire)} STATIONS,${stationsOnFire.join(",")},255,000,000`
+      }else{
+        serialMessage = "OK,000,255,000"
+      }
+
+      // then write to serial
+      port.write(serialMessage)
       console.log(
         `${message.consensusTimestamp.toDate()} Received: ${messageAsString}`
       );
