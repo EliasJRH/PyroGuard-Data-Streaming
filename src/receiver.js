@@ -89,9 +89,9 @@ async function receiveMessages() {
       }
 
       if (stationsOnFire.length > 0){
-        serialMessage = `FIRE AT ${len(stationsOnFire)} STATIONS,${stationsOnFire.join(",")},255,000,000`
+        serialMessage = `FIRE AT ${stationsOnFire.length} STATIONS,${stationsOnFire.join(",")},255,000,000`
       }else{
-        serialMessage = "OK,000,255,000"
+        serialMessage = "OK,ALL STATIONS SECURE,000,255,000"
       }
 
       // then write to serial
